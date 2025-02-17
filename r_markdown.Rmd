@@ -1,0 +1,44 @@
+---
+title: "R_markdown_project"
+author: "Hevar"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+### R Markdown
+
+## First Set of questions 
+Reading the date and making adjustments 
+```{r}
+df <- read.csv('activity.csv')
+df$date <- as.Date(df$date)
+str(df)
+colSums(is.na(df))
+```
+
+Calculate the total number of steps taken per day
+```{r}
+step_sum <- tapply(df$steps, df$date, sum, na.rm = T)
+step_sum
+
+sum_data <- as.data.frame(step_sum)
+sum_data$dates <- rownames(sum_data)
+head(sum_data)
+
+```
+
+Creating the histogram
+```{r}
+colors <- colorRampPalette(c('red', 'blue'))
+color <- colors(5)
+hist(sum_data$step_sum,col = color, xlab = 'Sum of the steps', main = 'Total Steps per Day')
+rug(sum_data$step_sum, lwd = 2, lty = 1, col = 'orange')
+```
+
+Calculating the mean and median for the total steps per day
+```{r pressure}
+mean_value <- mean(sum_data$step_sum, na.rm = T)
+median_value <- median(sum_data$step_sum, na.rm = T)
+print(paste('The mean value of the total steps is :' ,round(mean_value, 2)))
+print(paste('The median value of the total steps is :' ,median_value))
+```
+
