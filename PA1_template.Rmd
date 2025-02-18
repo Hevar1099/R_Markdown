@@ -1,0 +1,145 @@
+---
+title: "R markdown"
+author: "Hevar"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+### R Markdown
+
+## First Set of questions 
+Reading the date and making adjustments 
+```{r}
+df <- read.csv('activity.csv')
+df$date <- as.Date(df$date)
+str(df)
+colSums(is.na(df))
+```
+
+Calculate the total number of steps taken per day
+```{r}
+step_sum <- tapply(df$steps, df$date, sum, na.rm = T)
+sum_data <- as.data.frame(step_sum)
+sum_data$dates <- rownames(sum_data)
+head(sum_data)
+
+```
+
+Creating the histogram
+```{r}
+colors <- colorRampPalette(c('red', 'blue'))
+color <- colors(5)
+hist(sum_data$step_sum,col = color, xlab = 'Sum of the steps', 
+        main = 'Total Steps per Day')
+rug(sum_data$step_sum, lwd = 2, lty = 1, col = 'orange')
+```
+
+Calculating the mean and median for the total steps per day
+```{r pressure}
+mean_value <- mean(sum_data$step_sum, na.rm = T)
+median_value <- median(sum_data$step_sum, na.rm = T)
+print(paste('The mean value of the total steps is :' ,round(mean_value, 2)))
+print(paste('The median value of the total steps is :' ,median_value))
+```
+
+## Second Set Of Questions 
+
+What is the average daily activity pattern?
+```{r}
+second_df <- df # this was done to avoid messing with the original data
+interval_avg_steps <- aggregate(steps ~ interval, data = second_df, 
+        FUN = mean, na.rm = TRUE)
+plot(interval_avg_steps$interval, interval_avg_steps$steps,
+        type = "l", 
+        xlab = "5-Minute Interval",
+        ylab = "Average Steps Across All Days",
+        main = "Average Steps by 5-Minute Interval",
+        col = "lightblue", lwd = 2)
+```
+which 5 minute interval contain the highest number of steps
+```{r}
+print(paste('The maxium number of total steps is in interval:',
+        interval_avg_steps[max(interval_avg_steps$steps),]$interval))
+```
+
+## The Third Set Of Questions
+
+To deal with the missing values in the data, means of the intervals were used.
+```{r}
+table(rowSums(is.na(df))) # one means the row contains NA values
+third_df <- df # Again this was done to avoid messing with original data
+
+mean_values <- aggregate(third_df$steps~third_df$interval, FUN = mean, na.rm = T)
+colnames(mean_values) <- c('interval','means')
+
+clean_data <- merge(third_df, mean_values, by.x= 'interval', by.y = 'interval')
+clean_data$steps <- ifelse(is.na(clean_data$steps), 
+        clean_data$means, clean_data$steps)
+clean_data$means<- NULL
+clean_data$steps <- round(clean_data$steps, 2)
+```
+
+Calculating the total amount of steps per day
+```{r}
+total_steps_clean <- tapply(clean_data$steps, clean_data$date, sum)
+total_steps_clean <- as.data.frame(total_steps_clean)
+```
+
+Compression of the plots before and after
+```{r}
+par(mfcol = c(1,2), mar = c(4,4,3,2))
+hist(total_steps_clean$total_steps_clean, col = color, 
+        xlab = 'total steps per day', main = 'Total steps taken each day 
+        (clean data)')
+hist(sum_data$step_sum,col = color, xlab = 'Sum of the steps',
+        main = 'Total Steps per Day (Data With NA)')
+```
+
+difference between the mean and median values after the data was cleaned
+```{r}
+clean_mean <- mean(total_steps_clean$total_steps_clean)
+clean_median <- median(total_steps_clean$total_steps_clean)
+
+print(paste('The mean value after cleaning the data is:' ,
+        round(clean_mean,2), 'before it was:', round(mean_value,2)))
+print(paste('The median value after cleaning the data is:' ,
+        round(clean_median,2), 'before it was:',round(median_value,2)))
+```
+
+After cleaning the data by imputing missing values, the mean number of steps per 
+day increased from 9354.23 to 10766.18, and the median number of steps per 
+day rose from 10395 to 10766.13. This suggests that imputing the missing 
+values with the interval mean resulted in a slight upward shift in the overall 
+daily step counts.
+
+
+## Last Set Of Questions
+
+Creating the weekends columns, this column is used to compare the total steps
+in the weekends and the weekdays.
+```{r}
+library(lubridate)
+clean_data$weekday <- wday(clean_data$date, label = T)
+
+clean_data$weekday <- ifelse(clean_data$weekday == 'Sat' 
+        | clean_data$weekday == 'Sun', 'weekends', 'weekdays')
+```
+
+Creating the plots
+please be aware that this plot differs from the instructor plot, 
+due to difference in the data  as mentioned by the instructor.
+```{r}
+clean_data$weekday <- as.factor(clean_data$weekday)
+par(mfrow = c(2,1), mar = c(4,4,4,4))
+with(subset(clean_data, weekday == 'weekdays'), plot( interval, log(steps),
+        col = 'lightblue', type = 'l',
+        xlab = 'interval',
+        ylab = 'Total Steps',
+        main = 'Total Steps in the weekdays'))
+with(subset(clean_data, weekday == 'weekends'), plot( interval, log(steps),
+        col = 'lightblue', type = 'l',
+        xlab = 'interval',
+        ylab = 'Total Steps',
+        main = 'Total Steps in the weekends'))
+```
