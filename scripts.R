@@ -75,20 +75,21 @@ clean_data$weekday <- wday(clean_data$date, label = T)
 clean_data$weekday <- ifelse(clean_data$weekday == 'Sat' 
         | clean_data$weekday == 'Sun', 'weekends', 'weekdays')
 
+
 clean_data$weekday <- as.factor(clean_data$weekday)
-str(clean_data)
-clean_data
+Average_steps <- aggregate(clean_data$steps~clean_data$interval+clean_data$weekday, FUN = mean)
+colnames(Average_steps) <- c('interval', 'weekday', 'Average_steps')
 par(mfrow = c(2,1), mar = c(4,4,4,4))
-with(subset(clean_data, weekday == 'weekdays'), plot( interval, log(steps),
+with(subset(Average_steps, weekday == 'weekdays'), plot( interval, Average_steps,
         col = 'lightblue', type = 'l',
         xlab = 'interval',
-        ylab = 'Total Steps',
-        main = 'Total Steps in the weekdays'))
-with(subset(clean_data, weekday == 'weekends'), plot( interval, log(steps),
+        ylab = 'Average Steps',
+        main = 'Average Steps in the weekdays'))
+with(subset(Average_steps, weekday == 'weekends'), plot( interval, Average_steps,
         col = 'lightblue', type = 'l',
         xlab = 'interval',
-        ylab = 'Total Steps',
-        main = 'Total Steps in the weekends '))
+        ylab = 'Average Steps',
+        main = 'Average Steps in the weekends '))
 
 
 
