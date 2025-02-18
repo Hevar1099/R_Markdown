@@ -88,7 +88,7 @@ with(subset(clean_data, weekday == 'weekends'), plot( interval, log(steps),
         col = 'lightblue', type = 'l',
         xlab = 'interval',
         ylab = 'Total Steps',
-        main = 'Total Steps in the weekends'))
+        main = 'Total Steps in the weekends '))
 
 
 
