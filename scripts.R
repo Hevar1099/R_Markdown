@@ -36,6 +36,59 @@ plot(interval_avg_steps$interval, interval_avg_steps$steps,
 print(paste('The maxium number of total steps is in interval:',
         interval_avg_steps[max(interval_avg_steps$steps),]$interval))
 
+# Third Set of Questions 
+df
+table(rowSums(is.na(df))) # one means the row contains NA values
+third_df <- df
+
+mean_values <- aggregate(third_df$steps~third_df$interval, FUN = mean, na.rm = T)
+colnames(mean_values) <- c('interval','means')
+
+clean_data <- merge(third_df, mean_values, by.x= 'interval', by.y = 'interval')
+clean_data$steps <- ifelse(is.na(clean_data$steps), 
+        clean_data$means, clean_data$steps)
+clean_data$means<- NULL
+clean_data$steps <- round(clean_data$steps, 2)
+
+total_steps_clean <- tapply(clean_data$steps, clean_data$date, sum)
+total_steps_clean <- as.data.frame(total_steps_clean)
+
+par(mfcol = c(1,2), mar = c(4,4,3,2))
+hist(total_steps_clean$total_steps_clean, col = color, 
+        xlab = 'total steps per day', main = 'Total steps taken each day 
+        (clean data)')
+hist(sum_data$step_sum,col = color, xlab = 'Sum of the steps', main = 'Total Steps per Day
+        (Data With NA)')
+
+clean_mean <- mean(total_steps_clean$total_steps_clean)
+clean_median <- median(total_steps_clean$total_steps_clean)
+
+print(paste('The mean value after cleaning the data is:' ,
+        round(clean_mean,2), 'before it was:', round(mean_value,2)))
+print(paste('The median value after cleaning the data is:' ,
+        round(clean_median,2), 'before it was:',round(median_value,2)))
+
+# Fourth Set Of Questions 
+clean_data
+clean_data$weekday <- wday(clean_data$date, label = T)
+
+clean_data$weekday <- ifelse(clean_data$weekday == 'Sat' 
+        | clean_data$weekday == 'Sun', 'weekends', 'weekdays')
+
+clean_data$weekday <- as.factor(clean_data$weekday)
+str(clean_data)
+clean_data
+par(mfrow = c(2,1), mar = c(4,4,4,4))
+with(subset(clean_data, weekday == 'weekdays'), plot( interval, log(steps),
+        col = 'lightblue', type = 'l',
+        xlab = 'interval',
+        ylab = 'Total Steps',
+        main = 'Total Steps in the weekdays'))
+with(subset(clean_data, weekday == 'weekends'), plot( interval, log(steps),
+        col = 'lightblue', type = 'l',
+        xlab = 'interval',
+        ylab = 'Total Steps',
+        main = 'Total Steps in the weekends'))
 
 
 
